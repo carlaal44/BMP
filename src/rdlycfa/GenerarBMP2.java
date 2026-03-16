@@ -126,7 +126,6 @@ public class GenerarBMP2 {
 			int rFondo, int gFondo, int bFondo, boolean dibujarCirculo) throws Exception {
 
 		RandomAccessFile raf = new RandomAccessFile(archivo, "rw");
-
 		byte[] cabecera = new byte[54];
 		raf.read(cabecera); // leer cabecera
 
@@ -187,150 +186,149 @@ public class GenerarBMP2 {
 	public static void main(String[] args) {
 
 		Scanner in = new Scanner(System.in);
-
 		int modo;
 		int tamanioImg = 0, tamanioCuadrado = 0;
 		int rCuadrado, gCuadrado, bCuadrado;
 		int rFondo, gFondo, bFondo;
 		int inicio, fin, centro, radio, opcion;
 		int grosor;
-
-		boolean tamanioValido = false;
-		boolean dibujarCirculo = false;
+		boolean tamanioValido;
+		boolean dibujarCirculo;
 		boolean dentroCuadrado, bordeCuadrado, dentroCirculo;
+		boolean salir = false;
 
 		String nombre;
-		// pequeño menú inicial
-		System.out.println("=================================");
-		System.out.println("      GENERADOR DE IMAGEN BMP    ");
-		System.out.println("=================================");
 
-		System.out.println("0 - Crear BMP nuevo");
-		System.out.println("1 - Sobrescribir BMP existente");
+		while (!salir) {
 
-		modo = leerEntero(in, "Selecciona opción: "); // elegir modo de funcionamiento
+			// reiniciamos variables para cada ejecución
+			tamanioValido = false;
+			dibujarCirculo = false;
 
-		if (modo == 0) {
-			// crear una imagen nueva
-			nombre = leerNombreFichero(in, "Nombre del archivo: ");
-			tamanioImg = leerEntero(in, "Introduce el tamaño de la imagen: ");
-			// comprobar que el cuadrado no sea mayor que la imagen
-			while (!tamanioValido) {
+			// menú principal
+			System.out.println("=================================");
+			System.out.println("      GENERADOR DE IMAGEN BMP    ");
+			System.out.println("=================================");
 
-				tamanioCuadrado = leerEntero(in, "Introduce tamaño del cuadrado: ");
+			System.out.println("0 - Crear BMP nuevo");
+			System.out.println("1 - Sobrescribir BMP existente");
+			System.out.println("2 - Salir");
 
-				if (tamanioCuadrado <= tamanioImg) {
-					tamanioValido = true;
-				} else {
-					System.out.println("ERROR: El cuadrado no puede ser mayor.");
-				}
+			modo = leerEntero(in, "Selecciona opción: ");
+
+			// opción salir
+			if (modo == 2) {
+				salir = true;
+				System.out.println("Programa finalizado.");
+				continue; // vuelve al while y termina
 			}
-		} else {
-			// sobrescribir un BMP existente
-			System.out.print("Introduce BMP a modificar (ej: plantilla.bmp): ");
-			nombre = in.nextLine();
-
-			tamanioCuadrado = leerEntero(in, "Introduce tamaño del cuadrado: ");
-		}
-		// pedir color del cuadrado
-		System.out.println("\nCOLOR CUADRADO");
-
-		rCuadrado = leerColor(in, "Rojo (0-255): ");
-		gCuadrado = leerColor(in, "Verde (0-255): ");
-		bCuadrado = leerColor(in, "Azul (0-255): ");
-
-		// pedir color del fondo
-		System.out.println("\nCOLOR FONDO");
-
-		rFondo = leerColor(in, "Rojo (0-255): ");
-		gFondo = leerColor(in, "Verde (0-255): ");
-		bFondo = leerColor(in, "Azul (0-255): ");
-
-		// preguntar si se quiere dibujar círculo
-		opcion = leerEntero(in, "¿Quieres dibujar un círculo dentro del cuadrado? (1=SI / 0=NO): ");
-
-		if (opcion == 1)
-			dibujarCirculo = true;
-
-		try {
 
 			if (modo == 0) {
+				// crear una imagen nueva
+				nombre = leerNombreFichero(in, "Nombre del archivo: ");
+				tamanioImg = leerEntero(in, "Introduce el tamaño de la imagen: ");
 
-				// crear el archivo BMP
-				FileOutputStream fos = new FileOutputStream(nombre);
-
-				escribirCabeceraBMP(fos, tamanioImg); // escribir cabecera
-
-				// calcular límites del cuadrado para centrarlo
-				inicio = (tamanioImg - tamanioCuadrado) / 2;
-				fin = inicio + tamanioCuadrado;
-
-				centro = tamanioImg / 2; // centro de la imagen
-				radio = (tamanioCuadrado / 2) - 50; // radio del círculo
-
-				grosor = 50; // grosor del borde del cuadrado
-
-				// recorrer todos los píxeles de la imagen
-				for (int y = 0; y < tamanioImg; y++) {
-
-					for (int x = 0; x < tamanioImg; x++) {
-
-						// comprobar si el píxel está dentro del cuadrado
-						dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
-
-						// detectar si el píxel está en el borde del cuadrado
-						bordeCuadrado = dentroCuadrado
-								&& ((x >= inicio && x < inicio + grosor) || (x < fin && x >= fin - grosor)
-										|| (y >= inicio && y < inicio + grosor) || (y < fin && y >= fin - grosor));
-
-						// ecuación del círculo
-						dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio * radio;
-
-						// decidir qué color escribir en cada píxel
-						if (dibujarCirculo && dentroCirculo) {
-
-							fos.write(bFondo);
-							fos.write(gFondo);
-							fos.write(rFondo);
-
-						} else if (dibujarCirculo && dentroCuadrado) {
-
-							fos.write(bCuadrado);
-							fos.write(gCuadrado);
-							fos.write(rCuadrado);
-
-						} else if (!dibujarCirculo && bordeCuadrado) {
-
-							fos.write(bCuadrado);
-							fos.write(gCuadrado);
-							fos.write(rCuadrado);
-
-						} else {
-
-							// pintar fondo
-							fos.write(bFondo);
-							fos.write(gFondo);
-							fos.write(rFondo);
-						}
+				// comprobar que el cuadrado no sea mayor que la imagen
+				while (!tamanioValido) {
+					tamanioCuadrado = leerEntero(in, "Introduce tamaño del cuadrado: ");
+					if (tamanioCuadrado <= tamanioImg) {
+						tamanioValido = true;
+					} else {
+						System.out.println("ERROR: El cuadrado no puede ser mayor.");
 					}
 				}
 
-				fos.close(); // cerrar archivo
-
-				System.out.println("BMP creado correctamente.");
-
 			} else {
-
-				// modificar BMP existente
-				sobrescribirBMP(nombre, tamanioCuadrado, rCuadrado, gCuadrado, bCuadrado, rFondo, gFondo, bFondo,
-						dibujarCirculo);
-
-				System.out.println("BMP sobrescrito correctamente.");
+				// sobrescribir un BMP existente
+				System.out.print("Introduce BMP a modificar (ej: plantilla.bmp): ");
+				nombre = in.nextLine();
+				tamanioCuadrado = leerEntero(in, "Introduce tamaño del cuadrado: ");
 			}
 
-		} catch (Exception e) {
+			// pedir color del cuadrado
+			System.out.println("\nCOLOR CUADRADO");
+			rCuadrado = leerColor(in, "Rojo (0-255): ");
+			gCuadrado = leerColor(in, "Verde (0-255): ");
+			bCuadrado = leerColor(in, "Azul (0-255): ");
 
-			System.out.println("Error al crear/modificar imagen.");
+			// pedir color del fondo
+			System.out.println("\nCOLOR FONDO");
+			rFondo = leerColor(in, "Rojo (0-255): ");
+			gFondo = leerColor(in, "Verde (0-255): ");
+			bFondo = leerColor(in, "Azul (0-255): ");
+
+			// preguntar si se quiere dibujar círculo
+			opcion = leerEntero(in, "¿Quieres dibujar un círculo dentro del cuadrado? (1=SI / 0=NO): ");
+
+			if (opcion == 1)
+				dibujarCirculo = true;
+			try {
+				if (modo == 0) {
+
+					// crear el archivo BMP
+					FileOutputStream fos = new FileOutputStream(nombre);
+					escribirCabeceraBMP(fos, tamanioImg); // escribir cabecera
+
+					// calcular límites del cuadrado centrado
+					inicio = (tamanioImg - tamanioCuadrado) / 2;
+					fin = inicio + tamanioCuadrado;
+					centro = tamanioImg / 2; // centro de la imagen
+					radio = (tamanioCuadrado / 2) - 50; // radio del círculo
+
+					grosor = 50; // grosor del borde del cuadrado
+
+					// recorrer todos los píxeles de la imagen
+					for (int y = 0; y < tamanioImg; y++) {
+						for (int x = 0; x < tamanioImg; x++) {
+
+							// comprobar si el píxel está dentro del cuadrado
+							dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
+
+							// detectar si el píxel está en el borde del cuadrado
+							bordeCuadrado = dentroCuadrado
+									&& ((x >= inicio && x < inicio + grosor) || (x < fin && x >= fin - grosor)
+											|| (y >= inicio && y < inicio + grosor) || (y < fin && y >= fin - grosor));
+							// ecuación del círculo
+							dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio
+									* radio;
+
+							// decidir color del píxel
+							if (dibujarCirculo && dentroCirculo) {
+								fos.write(bFondo);
+								fos.write(gFondo);
+								fos.write(rFondo);
+
+							} else if (dibujarCirculo && dentroCuadrado) {
+								fos.write(bCuadrado);
+								fos.write(gCuadrado);
+								fos.write(rCuadrado);
+
+							} else if (!dibujarCirculo && bordeCuadrado) {
+								fos.write(bCuadrado);
+								fos.write(gCuadrado);
+								fos.write(rCuadrado);
+
+							} else {
+								// píxel de fondo
+								fos.write(bFondo);
+								fos.write(gFondo);
+								fos.write(rFondo);
+							}
+						}
+					}
+					fos.close(); // cerrar archivo
+					System.out.println("BMP creado correctamente.");
+
+				} else {
+
+					// modificar BMP existente
+					sobrescribirBMP(nombre, tamanioCuadrado, rCuadrado, gCuadrado, bCuadrado, rFondo, gFondo, bFondo,
+							dibujarCirculo);
+					System.out.println("BMP sobrescrito correctamente.");
+				}
+			} catch (Exception e) {
+				System.out.println("Error al crear/modificar imagen.");
+			}
 		}
 	}
 }
