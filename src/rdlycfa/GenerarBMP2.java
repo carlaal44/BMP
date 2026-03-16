@@ -19,23 +19,18 @@ public class GenerarBMP2 {
 		boolean valido = false;
 
 		while (!valido) {
-
 			try {
-
 				System.out.print(mensaje);
 				texto = in.nextLine().trim(); // quitamos espacios
-
 				if (texto.length() > 0) {
 					valido = true;
 				} else {
 					System.out.println("ERROR: Introduce un nombre válido.");
 				}
-
 			} catch (Exception e) {
 				System.out.println("ERROR: Entrada no válida.");
 			}
 		}
-
 		return texto + ".bmp"; // añadimos la extensión bmp
 	}
 
@@ -46,9 +41,7 @@ public class GenerarBMP2 {
 		boolean valido = false;
 
 		while (!valido) {
-
 			try {
-
 				System.out.print(mensaje);
 				numero = in.nextInt(); // leer número
 
@@ -57,15 +50,11 @@ public class GenerarBMP2 {
 				} else {
 					System.out.println("ERROR: El número debe ser >= 0.");
 				}
-
 			} catch (InputMismatchException e) {
-
 				System.out.println("ERROR: Introduce un número entero.");
 				in.nextLine(); // limpiar buffer
 			}
-
 		}
-
 		in.nextLine(); // limpiar salto de línea
 		return numero;
 	}
@@ -77,26 +66,19 @@ public class GenerarBMP2 {
 		boolean valido = false;
 
 		while (!valido) {
-
 			try {
-
 				System.out.print(mensaje);
 				color = in.nextInt(); // leer color
-
 				if (color >= 0 && color <= 255) {
 					valido = true;
 				} else {
 					System.out.println("ERROR: Valor entre 0 y 255.");
 				}
-
 			} catch (InputMismatchException e) {
-
 				System.out.println("ERROR: Introduce un número.");
 				in.nextLine(); // limpiar buffer
 			}
-
 		}
-
 		in.nextLine();
 		return color;
 	}
@@ -106,16 +88,13 @@ public class GenerarBMP2 {
 	 * define cómo es la imagen.
 	 */
 	public static void escribirCabeceraBMP(FileOutputStream fos, int tamanio) throws Exception {
-
 		// tamaño total del archivo (cabecera + píxeles)
 		int TAMANIO_ARCHIVO = 54 + tamanio * tamanio * 3;
-
 		// array de 54 bytes que será la cabecera
 		byte[] cabecera = new byte[54];
 
 		cabecera[0] = 'B'; // identificador BMP
 		cabecera[1] = 'M'; // identificador BMP
-
 		// tamaño total del archivo guardado en 4 bytes
 		cabecera[2] = (byte) (TAMANIO_ARCHIVO);
 		cabecera[3] = (byte) (TAMANIO_ARCHIVO >> 8);
@@ -164,50 +143,43 @@ public class GenerarBMP2 {
 
 		int grosor = 50; // grosor del borde del cuadrado
 
+		boolean dentroCuadrado;
+		boolean bordeCuadrado;
+		boolean dentroCirculo;
+
+		long posicion;
+
 		for (int y = 0; y < alto; y++) { // recorrer filas
-
 			for (int x = 0; x < ancho; x++) { // recorrer columnas
-
-				boolean dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
-
+				dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
 				// detectar si el píxel está en el borde del cuadrado
-				boolean bordeCuadrado = dentroCuadrado
+				bordeCuadrado = dentroCuadrado
 						&& ((x >= inicio && x < inicio + grosor) || (x < fin && x >= fin - grosor)
 								|| (y >= inicio && y < inicio + grosor) || (y < fin && y >= fin - grosor));
-
 				// ecuación del círculo
-				boolean dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio * radio;
-
+				dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio * radio;
 				// posición del píxel dentro del fichero
-				long posicion = 54 + (long) (y * ancho + x) * 3;
-
+				posicion = 54 + (long) (y * ancho + x) * 3;
 				raf.seek(posicion); // mover puntero del fichero
 
 				if (dibujarCirculo && dentroCirculo) {
-
 					raf.write(bFondo);
 					raf.write(gFondo);
 					raf.write(rFondo);
-
 				} else if (dibujarCirculo && dentroCuadrado) {
-
 					raf.write(bCuadrado);
 					raf.write(gCuadrado);
 					raf.write(rCuadrado);
-
 				} else if (!dibujarCirculo && bordeCuadrado) {
-
 					raf.write(bCuadrado);
 					raf.write(gCuadrado);
 					raf.write(rCuadrado);
 
 				} else {
-
 					// no escribir nada para mantener el fondo original
 				}
 			}
 		}
-
 		raf.close(); // cerrar fichero
 	}
 
@@ -221,12 +193,13 @@ public class GenerarBMP2 {
 		int rCuadrado, gCuadrado, bCuadrado;
 		int rFondo, gFondo, bFondo;
 		int inicio, fin, centro, radio, opcion;
+		int grosor;
 
 		boolean tamanioValido = false;
 		boolean dibujarCirculo = false;
+		boolean dentroCuadrado, bordeCuadrado, dentroCirculo;
 
 		String nombre;
-
 		// pequeño menú inicial
 		System.out.println("=================================");
 		System.out.println("      GENERADOR DE IMAGEN BMP    ");
@@ -238,11 +211,9 @@ public class GenerarBMP2 {
 		modo = leerEntero(in, "Selecciona opción: "); // elegir modo de funcionamiento
 
 		if (modo == 0) {
-
 			// crear una imagen nueva
 			nombre = leerNombreFichero(in, "Nombre del archivo: ");
 			tamanioImg = leerEntero(in, "Introduce el tamaño de la imagen: ");
-
 			// comprobar que el cuadrado no sea mayor que la imagen
 			while (!tamanioValido) {
 
@@ -254,29 +225,26 @@ public class GenerarBMP2 {
 					System.out.println("ERROR: El cuadrado no puede ser mayor.");
 				}
 			}
-
 		} else {
-
 			// sobrescribir un BMP existente
 			System.out.print("Introduce BMP a modificar (ej: plantilla.bmp): ");
 			nombre = in.nextLine();
 
 			tamanioCuadrado = leerEntero(in, "Introduce tamaño del cuadrado: ");
 		}
-
 		// pedir color del cuadrado
 		System.out.println("\nCOLOR CUADRADO");
 
-		rCuadrado = leerColor(in, "Rojo: ");
-		gCuadrado = leerColor(in, "Verde: ");
-		bCuadrado = leerColor(in, "Azul: ");
+		rCuadrado = leerColor(in, "Rojo (0-255): ");
+		gCuadrado = leerColor(in, "Verde (0-255): ");
+		bCuadrado = leerColor(in, "Azul (0-255): ");
 
 		// pedir color del fondo
 		System.out.println("\nCOLOR FONDO");
 
-		rFondo = leerColor(in, "Rojo: ");
-		gFondo = leerColor(in, "Verde: ");
-		bFondo = leerColor(in, "Azul: ");
+		rFondo = leerColor(in, "Rojo (0-255): ");
+		gFondo = leerColor(in, "Verde (0-255): ");
+		bFondo = leerColor(in, "Azul (0-255): ");
 
 		// preguntar si se quiere dibujar círculo
 		opcion = leerEntero(in, "¿Quieres dibujar un círculo dentro del cuadrado? (1=SI / 0=NO): ");
@@ -300,7 +268,7 @@ public class GenerarBMP2 {
 				centro = tamanioImg / 2; // centro de la imagen
 				radio = (tamanioCuadrado / 2) - 50; // radio del círculo
 
-				int grosor = 50; // grosor del borde del cuadrado
+				grosor = 50; // grosor del borde del cuadrado
 
 				// recorrer todos los píxeles de la imagen
 				for (int y = 0; y < tamanioImg; y++) {
@@ -308,16 +276,15 @@ public class GenerarBMP2 {
 					for (int x = 0; x < tamanioImg; x++) {
 
 						// comprobar si el píxel está dentro del cuadrado
-						boolean dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
+						dentroCuadrado = (x >= inicio && x < fin && y >= inicio && y < fin);
 
 						// detectar si el píxel está en el borde del cuadrado
-						boolean bordeCuadrado = dentroCuadrado
+						bordeCuadrado = dentroCuadrado
 								&& ((x >= inicio && x < inicio + grosor) || (x < fin && x >= fin - grosor)
 										|| (y >= inicio && y < inicio + grosor) || (y < fin && y >= fin - grosor));
 
 						// ecuación del círculo
-						boolean dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio
-								* radio;
+						dentroCirculo = ((x - centro) * (x - centro) + (y - centro) * (y - centro)) <= radio * radio;
 
 						// decidir qué color escribir en cada píxel
 						if (dibujarCirculo && dentroCirculo) {
